@@ -58,12 +58,19 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+app.use((req, res, next) => {
+  res.locals.success_msg = req.flash("success_msg");
+  res.locals.error_msg = req.flash("error_msg");
+  res.locals.error = req.flash("error");
+  next();
+});
+
 app.get("/", checkAuthenticated, (req, res) => {
   res.render("index", { user: req.user });
 });
 
 app.get("/login", checkNotAuthenticated, (req, res) => {
-  res.render("login", { message: req.flash("error") });
+  res.render("login");
 });
 
 app.get("/register", checkNotAuthenticated, (req, res) => {
@@ -85,9 +92,11 @@ app.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
-    res.redirect("/");
+    req.flash("success_msg", "You are registered and can now log in");
+    res.redirect("/login");
   } catch (err) {
-    res.status(500).json({ message: "Error registering user" });
+    req.flash("error_msg", "Error registering user");
+    res.redirect("/register");
   }
 });
 

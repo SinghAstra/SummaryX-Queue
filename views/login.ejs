@@ -1,6 +1,13 @@
 <link rel="stylesheet" href="/css/styles.css" />
 <h1>Log In</h1>
-<%= message %>
+
+<% if (error_msg) { %>
+<div><%= error_msg %></div>
+<% } %> <% if (error) { %>
+<div><%= error %></div>
+<% } %> <% if (success_msg) { %>
+<div><%= success_msg %></div>
+<% } %>
 <form action="/login" method="post">
   <label for="email">Email</label>
   <input type="text" id="email" name="email" required />
