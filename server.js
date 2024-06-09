@@ -4,27 +4,80 @@ const path = require("path");
 const mongoose = require("mongoose");
 const User = require("./models/User");
 const bcrypt = require("bcrypt");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const session = require("express-session");
+const flash = require("connect-flash");
 require("dotenv").config();
 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: false }));
 
-app.get("/", (req, res) => {
-  res.render("index");
+passport.use(
+  new LocalStrategy(
+    { usernameField: "email" },
+    async (email, password, done) => {
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          return done(null, false, { message: "User not found" });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return done(null, false, { message: "Incorrect password" });
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
 });
 
-app.get("/login", (req, res) => {
-  res.render("login");
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
-app.get("/register", (req, res) => {
+app.get("/", checkAuthenticated, (req, res) => {
+  res.render("index", { user: req.user });
+});
+
+app.get("/login", checkNotAuthenticated, (req, res) => {
+  res.render("login", { message: req.flash("error") });
+});
+
+app.get("/register", checkNotAuthenticated, (req, res) => {
   res.render("register");
 });
 
-app.post("/login", (req, res) => {
-  console.log("In /login req.body is ", req.body);
-});
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true,
+  })
+);
 
 app.post("/register", async (req, res) => {
   try {
@@ -32,20 +85,25 @@ app.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
-    res.json(user);
+    res.redirect("/");
   } catch (err) {
-    res.status(500).send("Error registering user");
+    res.status(500).json({ message: "Error registering user" });
   }
 });
 
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(200).send(users);
-  } catch (error) {
-    res.status(500).send(error);
+function checkAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
   }
-});
+  res.redirect("/login");
+}
+
+function checkNotAuthenticated(req, res, next) {
+  if (!req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/");
+}
 
 mongoose
   .connect(process.env.MONGODB_URI)
