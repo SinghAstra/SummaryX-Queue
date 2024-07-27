@@ -13,6 +13,41 @@ const initialBoard = [
 
 const ChessBoard = () => {
   const [board, setBoard] = useState(initialBoard);
+  const [selectedPiece, setSelectedPiece] = useState(null);
+
+  console.log("selectedPiece is ", selectedPiece);
+
+  const handleSquareClick = function (
+    clickedSquareRowIndex,
+    clickedSquareColIndex
+  ) {
+    if (selectedPiece) {
+      const newBoard = board.map(function (row, rowIndex) {
+        return row.map(function (piece, colIndex) {
+          if (
+            rowIndex === clickedSquareRowIndex &&
+            colIndex === clickedSquareColIndex
+          ) {
+            return selectedPiece.piece;
+          }
+          if (
+            rowIndex === selectedPiece.initialRow &&
+            colIndex === selectedPiece.initialCol
+          )
+            return null;
+          return piece;
+        });
+      });
+      setBoard(newBoard);
+      setSelectedPiece(null);
+    } else {
+      setSelectedPiece({
+        piece: board[clickedSquareRowIndex][clickedSquareColIndex],
+        initialRow: clickedSquareRowIndex,
+        initialCol: clickedSquareColIndex,
+      });
+    }
+  };
 
   return (
     <div className="board">
@@ -23,6 +58,7 @@ const ChessBoard = () => {
             <div
               className={`square ${isBlack ? "green" : "white"}`}
               key={`${rowIndex}-${colIndex}`}
+              onClick={() => handleSquareClick(rowIndex, colIndex)}
             >
               {piece && (
                 <Piece type={piece} color={rowIndex < 2 ? "black" : "white"} />
