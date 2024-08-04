@@ -116,22 +116,25 @@ nav .search-bar input::placeholder {
   gap: 2rem;
 }
 
-main {
-  position: relative;
-  top: 5.4rem;
-}
-
 main .container {
   display: grid;
   grid-template-columns: 18vw auto 20vw;
   column-gap: 2rem;
   /* position: relative; */
+  position: fixed;
+  top: 5.4rem;
+  width: 80%;
+  bottom: 0;
+  left: 10%;
 }
 
-main .container .left {
-  /* height: max-content; */
-  position: sticky;
-  /* top: var(--sticky-top-left); */
+main .container .left,
+main .container .middle,
+main .container .right {
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 main .container .left .profile {
@@ -218,7 +221,7 @@ main .container .left .profile {
 .left .btn {
   width: 100%;
   text-align: center;
-  margin-top: 1rem;
+  margin: 1rem 0;
   padding: 1rem 0;
 }
 
@@ -270,9 +273,6 @@ main .container .left .profile {
   gap: 0.5rem;
   overflow-x: auto;
   --webkit-overflow-scrolling: touch;
-}
-
-.stories {
   &::-webkit-scrollbar {
     display: none;
   }
@@ -369,4 +369,66 @@ main .container .left .profile {
 .middle .create-post input {
   width: 100%;
   color: var(--color-dark);
+}
+
+.feed {
+  background-color: var(--color-white);
+  margin-top: 1rem;
+  padding: var(--card-padding);
+  border-radius: var(--card-border-radius);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.feeds .feed:last-child {
+  margin-bottom: 2rem;
+}
+
+.feed .head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.feed .head .user {
+  display: flex;
+  gap: 1rem;
+}
+
+.feed .photo img {
+  margin: 0.7rem 0;
+  border-radius: var(--card-border-radius);
+  width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.4rem;
+  margin: 0.6rem;
+}
+
+.liked-by {
+  display: flex;
+  align-items: center;
+}
+
+.liked-by img {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 3px solid var(--color-white);
+  margin-left: -0.6rem;
+}
+
+.liked-by img:first-child {
+  margin-left: 0;
+}
+
+.liked-by p {
+  margin-left: 0.5rem;
+}
+
+.hash-tag {
+  color: var(--color-primary);
 }

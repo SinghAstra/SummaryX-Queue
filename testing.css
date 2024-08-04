@@ -8,41 +8,67 @@
   box-sizing: border-box;
   font-family: "Poppins", "Helvetica Neue", Helvetica, Arial;
 }
+nav {
+  position: fixed;
+  height: 6rem;
+  top: 0;
+  background-color: yellow;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  z-index: 2;
+}
 
 .main {
+  position: fixed;
+  top: 6.6rem;
+  bottom: 0;
+  width: 100%;
   display: grid;
-  grid-template-columns: 18vw auto 20vw;
-  gap: 10px;
+  grid-template-columns: 20vw auto 20vw;
 }
 
-.first {
-  background-color: rgb(13, 81, 145);
-  min-height: 100vh;
+.left {
+  background-color: palegoldenrod;
 }
 
-.second {
-  min-height: 100vh;
-  background-color: rgb(229, 169, 121);
-  overflow: hidden;
-}
-
-.third {
-  min-height: 100vh;
-  background-color: yellow;
-}
-
-.scrollable-container {
-  display: flex;
-  gap: 5px;
-  flex-wrap: nowrap;
-  overflow: auto;
-  border: 2px solid slateblue;
-  /* width: 300px; */
-}
-.card {
-  flex: 0 0 auto;
-  background-color: palegreen;
+.left .card {
   height: 4rem;
-  width: 4rem;
-  border-radius: 50%;
+  background-color: cyan;
+}
+
+.middle {
+  background-color: palegreen;
+}
+
+.middle .card {
+  background-color: rgb(32, 184, 171);
+}
+
+.right {
+  background-color: palevioletred;
+}
+
+.right .card {
+  height: 2rem;
+  background-color: purple;
+}
+
+.left,
+.middle,
+.right {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.card {
+  width: 80%;
+  margin: 0 auto;
+  height: 20rem;
+  flex: 0 0 auto;
 }
