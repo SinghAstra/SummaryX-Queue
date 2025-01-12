@@ -19,6 +19,8 @@ const processSteps: ProcessStep[] = [
   { status: "COMPLETED", label: "Completed" },
 ];
 
+const TERMINAL_STATUSES: ProcessStatus[] = ["COMPLETED", "FAILED", "CANCELLED"];
+
 export default function Home() {
   const [processId, setProcessId] = useState<string | null>(null);
   const [processStatus, setProcessStatus] = useState<ProcessStatus | null>(
@@ -79,17 +81,27 @@ export default function Home() {
       }
 
       setProcessStatus(data.status);
+
+      // If we receive a terminal status, close the connection gracefully
+      if (TERMINAL_STATUSES.includes(data.status)) {
+        eventSource.close();
+      }
     };
 
     eventSource.onerror = () => {
-      setError("Connection failed");
+      // Check if we have a terminal status - if so, this is an expected closure
+      if (processStatus && TERMINAL_STATUSES.includes(processStatus)) {
+        eventSource.close();
+        return;
+      }
+      setError("Connection lost. Please refresh the page to retry.");
       eventSource.close();
     };
 
     return () => {
       eventSource.close();
     };
-  }, [processId]);
+  }, [processId, processStatus]);
 
   // Send Request to start the process in background and receive process Id as response
   const startProcess = async () => {
@@ -152,7 +164,7 @@ export default function Home() {
     // Case 3: Future stages (Gray circle + Gray text)
     return (
       <div className="flex gap-2">
-        <Circle className="h-6 w-6 text-gray-300" />
+        <Circle className="h-6 w-6 text-gray-600" />
         <span className="text-gray-500 font-medium">{stepLabel}</span>
       </div>
     );
@@ -178,7 +190,7 @@ export default function Home() {
       )}
 
       {processId && (
-        <div className="w-full max-w-md space-y-4">
+        <div className="w-full max-w-md space-y-4 border bg-card/50 backdrop-blur-sm rounded-md shadow-md p-4">
           <div className="space-y-6">
             {processSteps.map((step) => (
               <div key={step.status} className="flex items-center gap-4">

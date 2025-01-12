@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className="antialiased min-h-screen bg-background">
         <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
         {children}
+        <Toaster />
       </body>
     </html>
   );
