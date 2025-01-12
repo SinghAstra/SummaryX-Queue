@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ProcessStatus } from "@prisma/client";
-import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 type ProcessStep = {
@@ -117,28 +117,45 @@ export default function Home() {
     }
   };
 
-  const getStepIcon = (stepStatus: ProcessStatus) => {
-    if (processStatus === "FAILED") {
-      return stepStatus === processStatus ? (
-        <AlertCircle className="h-6 w-6 text-red-500" />
-      ) : (
-        <Circle className="h-6 w-6 text-gray-300" />
-      );
-    }
-
+  const getStep = (step: ProcessStep) => {
+    const stepStatus = step.status;
+    const stepLabel = step.label;
     const currentIndex = processStatus
       ? processSteps.findIndex((s) => s.status === processStatus)
       : -1;
     const stepIndex = processSteps.findIndex((s) => s.status === stepStatus);
+    const lastIndex = processSteps.length - 1;
 
-    if (currentIndex >= stepIndex) {
-      if (stepStatus === processStatus && processStatus !== "COMPLETED") {
-        return <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />;
-      }
-      return <CheckCircle2 className="h-6 w-6 text-green-500" />;
+    // Case 1: Current stage (Blue loader + Blue text)
+    if (stepIndex === currentIndex && currentIndex !== lastIndex) {
+      return (
+        <div className="flex gap-2">
+          <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+          <span className="text-blue-500 font-medium">{stepLabel}</span>
+        </div>
+      );
     }
 
-    return <Circle className="h-6 w-6 text-gray-300" />;
+    // Case 2: Completed stages (Green tick + Green text)
+    if (
+      currentIndex > stepIndex ||
+      (stepIndex === lastIndex && currentIndex === lastIndex)
+    ) {
+      return (
+        <div className="flex gap-2">
+          <CheckCircle2 className="h-6 w-6 text-green-500" />
+          <span className="text-green-500 font-medium">{stepLabel}</span>
+        </div>
+      );
+    }
+
+    // Case 3: Future stages (Gray circle + Gray text)
+    return (
+      <div className="flex gap-2">
+        <Circle className="h-6 w-6 text-gray-300" />
+        <span className="text-gray-500 font-medium">{stepLabel}</span>
+      </div>
+    );
   };
 
   return (
@@ -165,21 +182,7 @@ export default function Home() {
           <div className="space-y-6">
             {processSteps.map((step) => (
               <div key={step.status} className="flex items-center gap-4">
-                {getStepIcon(step.status)}
-                <span
-                  className={`text-sm ${
-                    step.status === processStatus
-                      ? "text-blue-500 font-medium"
-                      : processSteps.findIndex(
-                          (s) => s.status === processStatus
-                        ) >
-                        processSteps.findIndex((s) => s.status === step.status)
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {step.label}
-                </span>
+                {getStep(step)}
               </div>
             ))}
           </div>
