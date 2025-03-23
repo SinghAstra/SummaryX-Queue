@@ -1,6 +1,4 @@
-"use client";
-
-export const mdxContent = `
+export const markdownContent = `
 # Sample Markdown Content
 
 This is a sample Markdown document that demonstrates various features of Markdown syntax.
