@@ -1,101 +1,195 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  font-family: "Poppins", system-ui;
-}
-
 @layer base {
   :root {
-    /* Core background and surface colors */
-    --background: 222 47% 5%;
-    --foreground: 213 31% 91%;
+    /* Dark theme colors inspired by Astro docs */
+    --color-background: 224 71.4% 4.1%;
+    --color-foreground: 210 20% 98%;
 
-    /* Elevated surfaces */
-    --card: 222 47% 7%;
-    --card-foreground: 213 31% 91%;
-    --popover: 222 47% 7%;
-    --popover-foreground: 213 31% 91%;
+    --color-card: 224 71.4% 4.1%;
+    --color-card-foreground: 210 20% 98%;
 
-    /* Primary accent - Vivid blue */
-    --primary: 214 95% 65%;
-    --primary-foreground: 222 47% 5%;
+    --color-primary: 263.4 70% 50.4%;
+    --color-primary-foreground: 210 20% 98%;
 
-    /* Secondary - Subtle blue-gray */
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 213 31% 91%;
+    --color-secondary: 215 27.9% 16.9%;
+    --color-secondary-foreground: 210 20% 98%;
 
-    /* Muted elements */
-    --muted: 222 47% 11%;
-    --muted-foreground: 215 20% 65%;
+    --color-muted: 215 27.9% 16.9%;
+    --color-muted-foreground: 217.9 10.6% 64.9%;
 
-    /* Accent - Slightly brighter than secondary */
-    --accent: 217 19% 27%;
-    --accent-foreground: 213 31% 91%;
+    --color-accent: 215 27.9% 16.9%;
+    --color-accent-foreground: 210 20% 98%;
 
-    /* Destructive actions */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --color-border: 215 27.9% 16.9%;
 
-    /* Borders and inputs */
-    --border: 222 47% 11%;
-    --input: 222 20% 15%;
-    --ring: 214 95% 65%;
+    --color-input: 215 27.9% 16.9%;
+    --color-ring: 263.4 70% 50.4%;
 
-    /* Radius */
-    --radius: 0.875rem;
-
-    --stats-blue: 210 40% 50%; /* Vibrant blue */
-    --stats-purple: 270 50% 50%; /* Deep purple */
-    --stats-pink: 330 60% 50%; /* Bright pink */
-    --stats-teal: 180 50% 40%; /* Teal green */
-    --stats-orange: 25 90% 50%; /* Warm orange */
-
-    --stats-green: 120 50% 40%; /* Verdant green */
-    --stats-red: 0 70% 50%;
+    /* Code syntax highlighting colors for dark mode */
+    --astro-code-color-text: #c9d1d9;
+    --astro-code-color-background: #161b22;
+    --astro-code-token-constant: #79c0ff;
+    --astro-code-token-string: #a5d6ff;
+    --astro-code-token-comment: #8b949e;
+    --astro-code-token-keyword: #ff7b72;
+    --astro-code-token-parameter: #c9d1d9;
+    --astro-code-token-function: #d2a8ff;
+    --astro-code-token-string-expression: #a5d6ff;
+    --astro-code-token-punctuation: #c9d1d9;
+    --astro-code-token-link: #a5d6ff;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+pre {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  background-color: var(--astro-code-color-background);
+  color: var(--astro-code-color-text);
 }
 
-body {
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
+code {
+  font-family: "Menlo", "Monaco", "Consolas", "Courier New", monospace;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Prose styling for MDX content */
+.prose {
+  max-width: 65ch;
+  color: hsl(var(--color-foreground));
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.prose a {
+  color: hsl(var(--color-primary));
+  text-decoration: underline;
+  font-weight: 500;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  scrollbar-color: hsl(222 47% 11%);
+.prose strong {
+  color: hsl(var(--color-foreground));
+  font-weight: 600;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: hsl(222 47% 11%);
-  border-radius: 3px;
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: hsl(var(--color-foreground));
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  line-height: 1.3;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0);
+.prose h1 {
+  font-size: 2.25em;
+  margin-top: 0;
 }
 
-.bg-grid-white {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.02)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+.prose h2 {
+  font-size: 1.5em;
+}
+
+.prose h3 {
+  font-size: 1.25em;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5em;
+}
+
+.prose ul li,
+.prose ol li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose blockquote {
+  border-left: 3px solid hsl(var(--color-border));
+  padding-left: 1em;
+  font-style: italic;
+  color: hsl(var(--color-muted-foreground));
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+.prose table th,
+.prose table td {
+  padding: 0.5em;
+  border: 1px solid hsl(var(--color-border));
+}
+
+.prose table th {
+  background-color: hsl(var(--color-muted));
+  font-weight: 600;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+/* Code syntax highlighting */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--astro-code-token-comment);
+}
+
+.token.punctuation {
+  color: var(--astro-code-token-punctuation);
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: var(--astro-code-token-constant);
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: var(--astro-code-token-string);
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: var(--astro-code-token-string-expression);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: var(--astro-code-token-keyword);
+}
+
+.token.function,
+.token.class-name {
+  color: var(--astro-code-token-function);
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: var(--astro-code-token-parameter);
 }

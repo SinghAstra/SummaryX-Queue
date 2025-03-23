@@ -1,62 +1,31 @@
-import { Toaster } from "@/components/ui/toaster";
-import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
-import NextTopLoader from "nextjs-toploader";
+import { Inter } from "next/font/google";
+import type React from "react";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [],
-  authors: [
-    {
-      name: "SinghAstra",
-      url: "https://github.com/SinghAstra",
-    },
-  ],
-  creator: "SinghAstra",
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: siteConfig.url,
-    title: siteConfig.name,
-    description: siteConfig.description,
-    siteName: siteConfig.name,
-    images: [
-      {
-        url: "/api/og",
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: ["/api/og"],
-    creator: "@singhastra",
-  },
-  icons: {
-    icon: "/favicon.ico",
-  },
+  title: "MDX Tabs Demo",
+  description: "Demo of client and server MDX rendering with tabs",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen bg-background">
-        <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}
+      >
+        <header className="border-b border-border">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 className="font-bold text-xl">MDX Demo</h1>
+          </div>
+        </header>
         {children}
-        <Toaster />
       </body>
     </html>
   );
