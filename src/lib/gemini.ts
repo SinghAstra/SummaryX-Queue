@@ -121,7 +121,7 @@ export async function generateBatchSummaries(
   files: { id: string; path: string; content: string | null }[]
 ) {
   let rawResponse;
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 20; i++) {
     try {
       const filePaths = new Set(files.map((file) => file.path));
 
@@ -208,7 +208,7 @@ export async function generateBatchSummaries(
         error.message.includes("429 Too Many Requests")
       ) {
         await handleRequestExceeded();
-        sleep(i);
+        sleep(i + 1);
         continue;
       }
 
