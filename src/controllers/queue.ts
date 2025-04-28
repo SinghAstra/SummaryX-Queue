@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { QUEUES } from "../lib/constants";
-import { repositoryQueue } from "../queues/repository";
+import { QUEUES } from "../lib/constants.js";
+import { repositoryQueue } from "../queues/repository.js";
 
 export const addJobToRepositoryQueue = async (req: Request, res: Response) => {
   try {

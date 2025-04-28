@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
+    "@octokit/rest": "^21.1.1",
     "@prisma/client": "^6.5.0",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.9",
@@ -22,6 +23,7 @@
   "name": "summaryx-queue",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "postinstall": "prisma generate",
@@ -29,8 +31,9 @@
     "dev:worker1": "node dist/workers/repository.js --id=1",
     "dev:worker2": "node dist/workers/directory.js --id=2",
     "dev:worker3": "node dist/workers/summary.js --id=3",
+    "dev:worker4": "node dist/workers/log.js --id=4",
     "dev:server": "node dist/index.js",
-    "dev": "concurrently \"npm run watch\" \"npm run dev:server\" \"npm run dev:worker1\" \"npm run dev:worker2\" \"npm run dev:worker3\""
+    "dev": "concurrently \"npm run watch\" \"npm run dev:server\" \"npm run dev:worker1\" \"npm run dev:worker2\" \"npm run dev:worker3\" \"npm run dev:worker4\""
   },
   "keywords": [],
   "author": "",

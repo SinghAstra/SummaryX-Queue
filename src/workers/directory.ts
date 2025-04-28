@@ -2,21 +2,24 @@ import { RepositoryStatus } from "@prisma/client";
 import { Worker } from "bullmq";
 import { GitHubContent } from "../interfaces/github.js";
 import {
-  CONCURRENT_PROCESSING,
-  FILE_BATCH_SIZE_FOR_AI_SHORT_SUMMARY,
+  CONCURRENT_WORKERS,
+  FILE_BATCH_SIZE_FOR_AI_SUMMARY,
   FILE_BATCH_SIZE_FOR_PRISMA_TRANSACTION,
   QUEUES,
 } from "../lib/constants.js";
 import { fetchGithubContent } from "../lib/github.js";
 import { prisma } from "../lib/prisma.js";
-import { sendProcessingUpdate } from "../lib/pusher/send-update.js";
 import {
   getDirectoryWorkerCompletedJobsRedisKey,
   getDirectoryWorkerTotalJobsRedisKey,
   getSummaryWorkerTotalJobsRedisKey,
 } from "../lib/redis-keys.js";
 import redisClient from "../lib/redis.js";
-import { directoryQueue, summaryQueue } from "../queues/repository.js";
+import {
+  directoryQueue,
+  logQueue,
+  summaryQueue,
+} from "../queues/repository.js";
 
 let dirPath: string;
 
@@ -49,34 +52,40 @@ async function startSummaryWorker(repositoryId: string) {
     console.log(`dirPath is ${dirPath}`);
     console.log("-------------------------------------------------------");
 
-    // Notify user that summary generation is starting
-    await sendProcessingUpdate(repositoryId, {
-      status: RepositoryStatus.PROCESSING,
-      message: "🤔 Studying files to create summaries...",
-    });
+    await logQueue.add(
+      QUEUES.LOG,
+      {
+        repositoryId,
+        status: RepositoryStatus.PROCESSING,
+        message: "🤔 Studying files to create summaries...",
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
+      }
+    );
 
     // Fetch the Files of the repository that do not have short summary
     const filesWithoutSummary = await prisma.file.findMany({
-      where: { repositoryId, shortSummary: null },
+      where: { repositoryId, summary: null },
       select: { id: true, path: true, content: true },
     });
 
-    const batchSizeForShortSummary = FILE_BATCH_SIZE_FOR_AI_SHORT_SUMMARY;
+    const batchSizeForSummary = FILE_BATCH_SIZE_FOR_AI_SUMMARY;
 
     const totalBatchesForShortSummary = Math.ceil(
-      filesWithoutSummary.length / batchSizeForShortSummary
+      filesWithoutSummary.length / batchSizeForSummary
     );
 
     redisClient.set(summaryWorkerTotalJobsKey, totalBatchesForShortSummary);
 
-    for (
-      let i = 0;
-      i < filesWithoutSummary.length;
-      i += batchSizeForShortSummary
-    ) {
+    for (let i = 0; i < filesWithoutSummary.length; i += batchSizeForSummary) {
       const fileWithoutSummaryBatch = filesWithoutSummary.slice(
         i,
-        i + batchSizeForShortSummary
+        i + batchSizeForSummary
       );
 
       await summaryQueue.add(QUEUES.SUMMARY, {
@@ -102,10 +111,21 @@ export const directoryWorker = new Worker(
       // Fetch only the current directory level (do NOT recurse)
       const items = await fetchGithubContent(owner, repo, path, repositoryId);
 
-      await sendProcessingUpdate(repositoryId, {
-        status: RepositoryStatus.PROCESSING,
-        message: `📂 Downloading the ${dirName} directory...`,
-      });
+      await logQueue.add(
+        QUEUES.LOG,
+        {
+          repositoryId,
+          status: RepositoryStatus.PROCESSING,
+          message: `📂 Downloading the ${dirName} directory...`,
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
+        }
+      );
 
       const directories = items.filter((item) => item.type === "dir");
       const files = items.filter((item) => item.type === "file");
@@ -151,11 +171,21 @@ export const directoryWorker = new Worker(
         })
       );
 
-      // Notify user that this directory is fully processed
-      await sendProcessingUpdate(repositoryId, {
-        status: RepositoryStatus.PROCESSING,
-        message: `✅ Finished downloading the ${dirName} directory`,
-      });
+      await logQueue.add(
+        QUEUES.LOG,
+        {
+          repositoryId,
+          status: RepositoryStatus.PROCESSING,
+          message: `✅ Finished downloading the ${dirName} directory`,
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
+        }
+      );
 
       await redisClient.incr(directoryWorkerCompletedJobsKey);
 
@@ -171,10 +201,24 @@ export const directoryWorker = new Worker(
         data: { status: RepositoryStatus.FAILED },
       });
 
-      await sendProcessingUpdate(repositoryId, {
-        status: RepositoryStatus.FAILED,
-        message: `⚠️ Oops! We couldn't process the ${dirName} directory. Please try again later. `,
-      });
+      await logQueue.add(
+        QUEUES.LOG,
+        {
+          repositoryId,
+          status: RepositoryStatus.FAILED,
+          message:
+            error instanceof Error
+              ? `⚠️ ${error.message}`
+              : "⚠️ Oops! Something went wrong. Please try again later. ",
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
+        }
+      );
     } finally {
       // Check if processing is complete
       await startSummaryWorker(repositoryId);
@@ -182,7 +226,7 @@ export const directoryWorker = new Worker(
   },
   {
     connection: redisClient,
-    concurrency: CONCURRENT_PROCESSING,
+    concurrency: CONCURRENT_WORKERS,
   }
 );
 
@@ -197,12 +241,23 @@ async function processFilesInBatches(
   try {
     const fileCount = files.length;
 
-    await sendProcessingUpdate(repositoryId, {
-      status: RepositoryStatus.PROCESSING,
-      message: `📄 Downloading ${fileCount} ${
-        fileCount === 1 ? "file" : "files"
-      } in ${dirName}...`,
-    });
+    await logQueue.add(
+      QUEUES.LOG,
+      {
+        repositoryId,
+        status: RepositoryStatus.PROCESSING,
+        message: `📄 Downloading ${fileCount} ${
+          fileCount === 1 ? "file" : "files"
+        } in ${dirName}...`,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
+      }
+    );
 
     const fileBatches = [];
     for (
@@ -238,34 +293,51 @@ async function processFilesInBatches(
       const totalBatches = fileBatches.length;
       const progress = Math.round((currentBatch / totalBatches) * 100);
 
-      await sendProcessingUpdate(repositoryId, {
-        status: RepositoryStatus.PROCESSING,
-        message: `⏳ Saving files in ${dirName}: ${progress}% complete`,
-      });
+      await logQueue.add(
+        QUEUES.LOG,
+        {
+          repositoryId,
+          status: RepositoryStatus.PROCESSING,
+          message: `⏳ Saving files in ${dirName}: ${progress}% complete`,
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
+        }
+      );
     }
 
-    await sendProcessingUpdate(repositoryId, {
-      status: RepositoryStatus.PROCESSING,
-      message: `🎉 Successfully downloaded  ${files.length} ${
-        files.length === 1 ? "file" : "files"
-      } in ${dirName}!`,
-    });
+    await logQueue.add(
+      QUEUES.LOG,
+      {
+        repositoryId,
+        status: RepositoryStatus.PROCESSING,
+        message: `🎉 Successfully downloaded  ${files.length} ${
+          files.length === 1 ? "file" : "files"
+        } in ${dirName}!`,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
+      }
+    );
   } catch (error) {
     if (error instanceof Error) {
       console.log("error.stack is ", error.stack);
       console.log("error.message is ", error.message);
     }
 
-    await sendProcessingUpdate(repositoryId, {
-      status: RepositoryStatus.FAILED,
-      message: `⚠️ Oops! Something went wrong in ${dirName}. Please try again later. `,
-    });
-
     throw error;
   }
 }
 
-directoryWorker.on("failed", (job, error) => {
+directoryWorker.on("failed", (error) => {
   if (error instanceof Error) {
     console.log("error.stack is ", error.stack);
     console.log("error.message is ", error.message);
@@ -273,7 +345,7 @@ directoryWorker.on("failed", (job, error) => {
   console.log("Error occurred in directory worker");
 });
 
-directoryWorker.on("completed", async (job) => {
+directoryWorker.on("completed", async () => {
   console.log("Directory Worker completed successfully.");
 });
 
