@@ -14,6 +14,10 @@ export function getSummaryWorkerCompletedJobsRedisKey(repositoryId: string) {
   return `${repositoryId}:summaryWorkerCompletedJobs`;
 }
 
+export function getRepositoryCancelledRedisKey(repositoryId: string) {
+  return `${repositoryId}:cancelled`;
+}
+
 export function getGeminiRequestsThisMinuteRedisKey() {
   const now = Date.now();
   const currentMinute = Math.floor(now / 60000);

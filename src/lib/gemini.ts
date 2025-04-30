@@ -23,7 +23,7 @@ type ParsedSummary = {
 };
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const modelName = "gemini-2.0-flash";
+const modelName = "gemini-1.5-flash";
 
 if (!GEMINI_API_KEY) {
   throw new Error("Missing GEMINI_API_KEY environment variable.");
@@ -121,7 +121,7 @@ export async function generateBatchSummaries(
   files: { id: string; path: string; content: string | null }[]
 ) {
   let rawResponse;
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 100; i++) {
     try {
       const filePaths = new Set(files.map((file) => file.path));
 
@@ -205,7 +205,7 @@ export async function generateBatchSummaries(
 
       if (
         error instanceof Error &&
-        error.message.includes("429 Too Many Requests")
+        error.message.includes("GoogleGenerativeAI Error")
       ) {
         await handleRequestExceeded();
         sleep(i + 1);
