@@ -4,12 +4,12 @@ import { QUEUES, SUMMARY_WORKERS } from "../lib/constants.js";
 
 import { generateBatchSummaries } from "../lib/gemini.js";
 import { prisma } from "../lib/prisma.js";
-import redisClient from "../lib/redis.js";
 import {
   getRepositoryCancelledRedisKey,
   getSummaryWorkerCompletedJobsRedisKey,
   getSummaryWorkerTotalJobsRedisKey,
 } from "../lib/redis/redis-keys.js";
+import redisClient from "../lib/redis/redis.js";
 import { logQueue } from "../queues/index.js";
 
 async function generateRepoOverview(repositoryId: string) {

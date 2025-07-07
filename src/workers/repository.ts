@@ -3,11 +3,12 @@ import { Worker } from "bullmq";
 import { CONCURRENT_WORKERS, QUEUES } from "../lib/constants.js";
 import { parseGithubUrl } from "../lib/github.js";
 import { prisma } from "../lib/prisma.js";
-import redisClient from "../lib/redis.js";
+
 import {
   getDirectoryWorkerCompletedJobsRedisKey,
   getDirectoryWorkerTotalJobsRedisKey,
-} from "../lib/redis/redi../lib/redis/redis.js
+} from "../lib/redis/redis-keys.js";
+import redisClient from "../lib/redis/redis.js";
 import { directoryQueue, logQueue } from "../queues/index.js";
 
 export const repositoryWorker = new Worker(
