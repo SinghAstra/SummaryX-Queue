@@ -1,14 +1,9 @@
-import { Queue } from "bullmq";
 import { Request, Response } from "express";
 import { cancelAllRepositoryJobs } from "../lib/cancel-jobs.js";
-import { QUEUES } from "../lib/constants.js";
 import { prisma } from "../lib/prisma.js";
-import redisClient from "../lib/redis.js";
-
 
 export const cleanUserJobs = async (req: Request, res: Response) => {
   try {
-
     console.log("In Clean User Jobs");
     const userId = req.body.auth.userId;
     console.log("req.body.auth is ", req.body.auth);
@@ -32,7 +27,6 @@ export const cleanUserJobs = async (req: Request, res: Response) => {
     res.status(200).json({
       message: `Successfully cleaned all Jobs `,
     });
-
   } catch (error) {
     if (error instanceof Error) {
       console.log("error.stack is ", error.stack);
