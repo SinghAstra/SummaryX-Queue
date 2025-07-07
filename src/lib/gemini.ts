@@ -4,8 +4,8 @@ import { generateBatchSummarySystemPrompt } from "./prompt.js";
 import {
   getGeminiRequestsThisMinuteRedisKey,
   getGeminiTokensConsumedThisMinuteRedisKey,
-} from "./redis-keys.js";
-import redisClient from "./redis.js";
+} from "./redis/redis-keys.js";
+import redisClient from "./redis/redis.js";
 
 dotenv.config();
 
