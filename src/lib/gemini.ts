@@ -68,8 +68,8 @@ async function waitForRateLimitReset(maxRetries = 30) {
 }
 
 async function sleep(times: number) {
-  console.log(`Sleeping for ${2 * times} seconds...`);
-  await new Promise((resolve) => setTimeout(resolve, 2000 * times));
+  console.log(`Sleeping for ${60 * times} seconds...`);
+  await new Promise((resolve) => setTimeout(resolve, 60000 * times));
 }
 
 export async function generateBatchSummaries(
