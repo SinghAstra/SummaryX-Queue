@@ -189,6 +189,14 @@ export async function generateBatchSummaries(
         continue;
       }
 
+      if (error instanceof Error) {
+        console.log("--------------------------------");
+        console.log(`Unknown Error Occurred. Trying again for ${i} time`);
+        console.log("--------------------------------");
+        sleep(i + 1);
+        continue;
+      }
+
       throw new Error(
         error instanceof Error
           ? error.message
